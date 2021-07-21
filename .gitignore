@@ -1,8 +1,8 @@
 # Custom
-Emmily/db.sqlite3
+db.sqlite3
 .vscode/*
 .replit
-.vm/*
+.vm/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -113,10 +113,3 @@ media/
 *.pyc
 *.db
 *.pid
-
-# Ignore Django Migrations in Development if you are working on team
-
-# Only for Development only
-# **/migrations/**
-# !**/migrations
-# !**/migrations/__init__.py

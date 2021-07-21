@@ -1,169 +1,106 @@
-# MemCachier Django Example App
+# Flask API
 
-This is an example Django app that uses
-[MemCachier](http://www.memcachier.com) to cache algebraic
-computations. 
+This is a Flask API that I will keep improving with new features and functionalities.
+This boilerplate can be used as a template for bigger projects.
 
-**This example is written with Django 1.8.16. Unless you specifically
-need an old Django version you should check out a newer 
-[example](https://github.com/memcachier/examples-django-tasklist).**
+### Introduction
 
-You can view a working version of this app
-[here](http://memcachier-examples-django.herokuapp.com) that uses
-[MemCachier on Heroku](https://addons.heroku.com/memcachier).
-Running this app on your local machine in development will work as
-well, although then you won't be using MemCachier -- you'll be using a
-local dummy cache. MemCachier is currently only available with various
-cloud providers.
+The “micro” in microframework means Flask aims to keep the core simple but extensible. Flask won’t make many decisions for you, such as what database to use.
 
-Setting up MemCachier to work in Django is very easy. You need to
-make changes to requirements.txt, settings.py, and any app code that
-you want cached. These changes are covered in detail below.
+By convention, templates and static files are stored in subdirectories within the application’s Python source tree, with the names templates and static respectively.
 
-## Deploy to Heroku
+### Dependencies
 
-You can deploy this app yourself to Heroku to play with.
+* [Python](https://www.python.org/) - Programming Language
+* [Flask](https://flask.palletsprojects.com/) - The framework used
+* [SQLAlchemy](https://docs.sqlalchemy.org/) - ORM
+* [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
+* [Alembic](https://alembic.sqlalchemy.org/) - Database Migrations
+* [Pip](https://pypi.org/project/pip/) - Dependency Management
+* [RESTful](https://restfulapi.net/) - REST docs
+* [Representational State Transfer](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm) - Article by Roy Fielding
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+### Virtual environments
 
-## Building
+```
+$ sudo apt-get install python-virtualenv
+$ python3 -m venv venv
+$ . venv/bin/activate
+$ pip install Flask
+```
 
-It is best to use the python `virtualenv` tool to build locally:
+Install all project dependencies using:
 
-```sh
-$ virtualenv-2.7 venv
-$ source venv/bin/activate
+```
 $ pip install -r requirements.txt
-$ DEVELOPMENT=1 python manage.py runserver
 ```
 
-Then visit `http://localhost:8000` to view the app. Alternatively you
-can use foreman and gunicorn to run the server locally (after copying
-`dev.env` to `.env`):
-
-```sh
-$ foreman start
+### Running
+ 
+```
+$ export FLASK_APP=app.py
+$ export FLASK_ENV=development
+$ python -m flask run
 ```
 
-## Deploy to Heroku
+This launches a very simple builtin server, which is good enough for testing but probably not what you want to use in production.
 
-Run the following commands to deploy the app to Heroku:
+If you enable debug support the server will reload itself on code changes, and it will also provide you with a helpful debugger if things go wrong.
 
-```sh
-$ git clone https://github.com/memcachier/examples-django.git
-$ cd examples-django
-$ heroku create
-$ heroku addons:add memcachier:dev
-$ git push heroku master:master
-$ heroku open
-```
-
-## requirements.txt
-
-MemCachier has been tested with the pylibmc memcache client, but the
-default client doesn't support SASL authentication. Run the following
-commands to install the necessary pips:
-
-```sh
-$ sudo brew install libmemcached
-$ pip install django-pylibmc pylibmc
-```
-
-Don't forget to update your requirements.txt file with these new pips.
-requirements.txt should have the following two lines:
+If you have the debugger disabled or trust the users on your network, you can make the server publicly available simply by adding --host=0.0.0.0 to the command line:
 
 ```
-django-pylibmc==0.6.1
-pylibmc==1.5.1
+flask run --host=0.0.0.0
 ```
 
-## Configuring MemCachier (settings.py)
+### Running using Manager
 
-To configure Django to use pylibmc with SASL authentication. You'll also need
-to setup your environment, because pylibmc expects different environment
-variables than MemCachier provides. Somewhere in your `settings.py` file you
-should have the following lines:
+This app can be started using Flask Manager. It provides some useful commands and configurations, also, it can be customized with more functionalities.
 
-```python
-os.environ['MEMCACHE_SERVERS'] = os.environ.get('MEMCACHIER_SERVERS', '').replace(',', ';')
-os.environ['MEMCACHE_USERNAME'] = os.environ.get('MEMCACHIER_USERNAME', '')
-os.environ['MEMCACHE_PASSWORD'] = os.environ.get('MEMCACHIER_PASSWORD', '')
-
-CACHES = {
-    'default': {
-        # Use pylibmc
-        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
-
-        # Use binary memcache protocol (needed for authentication)
-        'BINARY': True,
-
-        # TIMEOUT is not the connection timeout! It's the default expiration
-        # timeout that should be applied to keys! Setting it to `None`
-        # disables expiration.
-        'TIMEOUT': None,
-        'OPTIONS': {
-            # Enable faster IO
-            'tcp_nodelay': True,
-
-            # Keep connection alive
-            'tcp_keepalive': True,
-
-            # Timeout settings
-            'connect_timeout': 2000, # ms
-            'send_timeout': 750 * 1000, # us
-            'receive_timeout': 750 * 1000, # us
-            '_poll_timeout': 2000, # ms
-
-            # Better failover
-            'ketama': True,
-            'remove_failed': 1,
-            'retry_timeout': 2,
-            'dead_timeout': 30,
-        }
-    }
-}
+```
+python manage.py runserver
 ```
 
-## Persistent Connections
+### Alembic Migrations
 
-By default, Django doesn't use persistent connections with memcached. This is a
-huge performance problem, especially when using SASL authentication as the
-connection setup is even more expensive than normal.
+Use the following commands to create a new migration file and update the database with the last migrations version:
 
-You can fix this by putting the following code in your `wsgi.py` file:
-
-```python
-# Fix django closing connection to MemCachier after every request (#11331)
-from django.core.cache.backends.memcached import BaseMemcachedCache
-BaseMemcachedCache.close = lambda self, **kwargs: None
+```
+flask db revision --autogenerate -m "description here"
+flask db upgrade head
 ```
 
-There is a bug file against Django for this issue
-([#11331](https://code.djangoproject.com/ticket/11331)).
+This project also uses the customized manager command to perform migrations.
+```
+python manage.py db revision --autogenerate -m "description here"
+python manage.py db upgrade head
+```
 
-## Application Code
+To upgrade the database with the newest migrations version, use:
 
-In your application, use django.core.cache methods to access
-MemCachier. A description of the low-level caching API can be found
-[here](https://docs.djangoproject.com/en/1.8/topics/cache/#the-low-level-cache-api).
-All the built-in Django caching tools will work, too.
+```
+python manage.py db upgrade head
+```
 
-Take a look at
-[memcachier_algebra/views.py](https://github.com/memcachier/examples-django/blob/master/memcachier_algebra/views.py)
-in this repository for an example.
+For more information, access [Auto generating migrations](https://alembic.sqlalchemy.org/en/latest/autogenerate.html).
 
-## Get involved!
 
-We are happy to receive bug reports, fixes, documentation enhancements,
-and other improvements.
+## Contributing
 
-Please report bugs via the
-[github issue tracker](http://github.com/memcachier/examples-django/issues).
+This API was developed based on:
 
-Master [git repository](http://github.com/memcachier/examples-django):
+[Flask documentation](https://flask.palletsprojects.com/)
 
-* `git clone git://github.com/memcachier/examples-django.git`
+[REST APIs with Flask and Python](https://www.udemy.com/rest-api-flask-and-python/) 
 
-## Licensing
+[The Ultimate Flask Course](https://www.udemy.com/the-ultimate-flask-course) 
 
-This library is BSD-licensed.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Certificate
+
+
+[Certificate](https://www.udemy.com/certificate/UC-CYMYZILZ/)
