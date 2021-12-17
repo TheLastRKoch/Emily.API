@@ -1,5 +1,5 @@
-from resources.player.controller import add_player_resource_table
-from resources.basic.controller import add_basic_resource_table
+from src.resources.player.controller import add_player_resource_table
+from src.resources.basic.controller import add_basic_resource_table
 from dotenv import load_dotenv
 from flask_restful import Api
 from flask import Flask

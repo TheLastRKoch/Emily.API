@@ -1,4 +1,4 @@
-from app import app as application
+from src.app import app as application
 from os import environ as env
 
 if __name__ == "__main__":

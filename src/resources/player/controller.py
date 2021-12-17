@@ -1,9 +1,9 @@
-from services import GithubGistService
+from src.services import GithubGistService
 from flask_restful import Resource
 from requests.api import request
 from os import environ as env
 from flask import request
-from utils import utils
+from src.utils import utils
 
 
 class PlayerController(Resource):
