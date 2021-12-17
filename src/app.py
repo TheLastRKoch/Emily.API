@@ -1,5 +1,5 @@
 from resources.player.controller import add_player_resource_table
-from resources.status.controller import add_status_resource_table
+from resources.basic.controller import add_basic_resource_table
 from dotenv import load_dotenv
 from flask_restful import Api
 from flask import Flask
@@ -16,5 +16,5 @@ api = Api(app)
 
 # End Points Routes
 # add_product_resource_table(api)
-add_status_resource_table(api)
+add_basic_resource_table(api)
 add_player_resource_table(api)
